@@ -11,6 +11,7 @@ import {
   X
 } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
+import { ROUTES, isRouteActive } from '@/lib/navigation/routes.js'
 import { useState } from 'react'
 
 interface NavItem {
@@ -32,32 +33,32 @@ export const Sidebar: React.FC = () => {
       id: 'dashboard',
       label: 'Dashboard',
       icon: Home,
-      href: '/dashboard',
+      href: ROUTES.DASHBOARD,
     },
     {
       id: 'slum-planner',
       label: 'Slum Planner',
       icon: Map,
-      href: '/slum-planner',
+      href: ROUTES.SLUM_PLANNER,
       roles: ['officer', 'admin'],
     },
     {
       id: 'complaints',
       label: 'Complaints',
       icon: MessageSquare,
-      href: '/complaints',
+      href: ROUTES.COMPLAINTS,
     },
     {
       id: 'housing-match',
       label: 'Housing Match',
       icon: Building,
-      href: '/housing-match',
+      href: ROUTES.HOUSING_MATCH,
     },
     {
       id: 'admin',
       label: 'Admin Panel',
       icon: Settings,
-      href: '/admin',
+      href: ROUTES.ADMIN,
       roles: ['admin'],
     },
   ]
@@ -69,15 +70,14 @@ export const Sidebar: React.FC = () => {
   const handleLogout = async () => {
     try {
       logout()
-      navigate('/login')
+      navigate(ROUTES.LOGIN)
     } catch (error) {
       console.error('Logout error:', error)
     }
   }
 
   const isActive = (href: string) => {
-    return location.pathname === href || 
-           (href !== '/dashboard' && location.pathname.startsWith(href))
+    return isRouteActive(location.pathname, href)
   }
 
   return (

@@ -2,6 +2,7 @@ import React from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 import { useAuthStore } from '@/store/authStore'
 import { UserRole } from '@/types/user.types'
+import { ROUTES } from '@/lib/navigation/routes.js'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
@@ -14,7 +15,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   requiredRole,
   allowedRoles,
-  fallbackPath = '/login',
+  fallbackPath = ROUTES.LOGIN,
 }) => {
   const { isAuthenticated, user, hasRole } = useAuthStore()
   const location = useLocation()

@@ -20,7 +20,6 @@ export default defineConfig({
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom'],
-          firebase: ['firebase'],
           maps: ['@react-google-maps/api'],
           ui: ['lucide-react', 'recharts'],
         },

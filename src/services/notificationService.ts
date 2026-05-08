@@ -1,3 +1,5 @@
+import { ROUTES, complaintDetailPath, slumPlannerPath } from '@/lib/navigation/routes.js'
+
 export class NotificationService {
   // Request notification permission
   async requestPermission(): Promise<NotificationPermission> {
@@ -74,7 +76,7 @@ export class NotificationService {
       data: { type: 'complaint', complaintId: complaint.id },
       onClick: () => {
         // Navigate to complaint details
-        window.location.href = `/complaints/${complaint.id}`
+        window.location.href = complaintDetailPath(complaint.id)
       },
     })
   }
@@ -102,7 +104,7 @@ export class NotificationService {
       data: { type: 'housing', applicationId: application.id },
       onClick: () => {
         // Navigate to housing applications
-        window.location.href = '/housing-match'
+        window.location.href = ROUTES.HOUSING_MATCH
       },
     })
   }
@@ -130,7 +132,7 @@ export class NotificationService {
       data: { type: 'ward', wardId: data.wardId },
       onClick: () => {
         // Navigate to ward details
-        window.location.href = `/slum-planner?ward=${data.wardId}`
+        window.location.href = slumPlannerPath(data.wardId)
       },
     })
   }
