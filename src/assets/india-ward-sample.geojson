@@ -1,0 +1,89 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "wardId": "14",
+        "wardName": "Shivajinagar",
+        "population": 85000,
+        "area": 4.2,
+        "infraScore": {
+          "water": 45,
+          "sanitation": 38,
+          "roads": 52,
+          "power": 68,
+          "overall": 51
+        }
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [77.5946, 12.9716],
+          [77.5956, 12.9726],
+          [77.5966, 12.9716],
+          [77.5966, 12.9706],
+          [77.5956, 12.9696],
+          [77.5946, 12.9706],
+          [77.5946, 12.9716]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "wardId": "27",
+        "wardName": "Basaveshwaranagar",
+        "population": 72000,
+        "area": 3.8,
+        "infraScore": {
+          "water": 62,
+          "sanitation": 58,
+          "roads": 71,
+          "power": 85,
+          "overall": 69
+        }
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [77.5846, 12.9816],
+          [77.5856, 12.9826],
+          [77.5866, 12.9816],
+          [77.5866, 12.9806],
+          [77.5856, 12.9796],
+          [77.5846, 12.9806],
+          [77.5846, 12.9816]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "wardId": "63",
+        "wardName": "Mahadevapura",
+        "population": 95000,
+        "area": 5.1,
+        "infraScore": {
+          "water": 71,
+          "sanitation": 65,
+          "roads": 58,
+          "power": 92,
+          "overall": 72
+        }
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [77.6046, 12.9616],
+          [77.6056, 12.9626],
+          [77.6066, 12.9616],
+          [77.6066, 12.9606],
+          [77.6056, 12.9596],
+          [77.6046, 12.9606],
+          [77.6046, 12.9616]
+        ]]
+      }
+    }
+  ]
+}
