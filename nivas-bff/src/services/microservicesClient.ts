@@ -17,11 +17,13 @@ export class MicroservicesClient {
   }
 
   async classifyComplaint(complaintId: string): Promise<void> {
-    await this.postIfConfigured('/complaint-classifier/classifyComplaint', { complaintId });
+    // Classification is handled by the ai-services Firestore trigger automatically.
+    // We log it here for visibility but don't need to make an API call.
+    console.debug(`Complaint ${complaintId} queued for background classification.`);
   }
 
   async routeComplaint(complaintId: string, officerId?: string): Promise<void> {
-    await this.postIfConfigured('/complaint-router/manualRouteComplaint', { complaintId, officerId });
+    await this.postIfConfigured('/api/router/route', { complaintId, officerId });
   }
 
   async analyzeWard(payload: WardPayload): Promise<WardAnalysisResponse> {
@@ -46,7 +48,7 @@ export class MicroservicesClient {
       };
     }
 
-    const { data } = await axios.post<WardAnalysisResponse>(`${this.baseUrl}/ward-analyzer/analyzeWard`, payload);
+    const { data } = await axios.post<WardAnalysisResponse>(`${this.baseUrl}/api/ward/analyze`, payload);
     return data;
   }
 
@@ -55,7 +57,7 @@ export class MicroservicesClient {
       return { matches: [] };
     }
 
-    const { data } = await axios.post<HousingMatchResponse>(`${this.baseUrl}/housing-matcher/matchHousing`, payload);
+    const { data } = await axios.post<HousingMatchResponse>(`${this.baseUrl}/api/housing/match`, payload);
     return data;
   }
 
@@ -69,14 +71,14 @@ export class MicroservicesClient {
       };
     }
 
-    const { data } = await axios.post<DocumentParseResponse>(`${this.baseUrl}/document-parser/parseDocument`, {
+    const { data } = await axios.post<DocumentParseResponse>(`${this.baseUrl}/api/documents/upload`, {
       documentId,
     });
     return data;
   }
 
   async broadcastNotification(payload: unknown): Promise<void> {
-    await this.postIfConfigured('/notification-broadcaster/broadcastNotification', payload);
+    await this.postIfConfigured('/api/notifications/broadcast', payload);
   }
 
   private async postIfConfigured(path: string, payload: unknown): Promise<void> {

@@ -102,7 +102,7 @@ function LogoMark() {
 
 function MegaMenu() {
   return (
-    <div className="landing-mega invisible absolute left-1/2 top-[calc(100%+1rem)] z-50 w-[min(1060px,calc(100vw-2rem))] -translate-x-1/2 translate-y-2 opacity-0 transition duration-200 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100">
+    <div className="landing-mega invisible absolute left-1/2 top-full pt-4 z-50 w-[min(1060px,calc(100vw-2rem))] -translate-x-1/2 translate-y-2 opacity-0 transition duration-200 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100">
       <div className="overflow-hidden rounded-[34px] border border-white/80 bg-white/95 shadow-premium backdrop-blur-2xl">
         <div className="grid gap-1 p-5 lg:grid-cols-4">
           {LANDING_PRODUCT_COLUMNS.map((column) => (

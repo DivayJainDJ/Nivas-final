@@ -53,6 +53,8 @@ export const useAuthSessionStore = create(
       isLoading: false,
       authError: null,
       pendingPhone: null,
+      _hasHydrated: false,
+      setHasHydrated: (state) => set({ _hasHydrated: state }),
       login: ({ user, role, isDemoMode = false }) =>
         set({
           user: { ...user, role },
@@ -111,6 +113,9 @@ export const useAuthSessionStore = create(
         isAuthenticated: state.isAuthenticated,
         isDemoMode: state.isDemoMode,
       }),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true)
+      },
     },
   ),
 )

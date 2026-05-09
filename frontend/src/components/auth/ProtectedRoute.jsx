@@ -7,8 +7,14 @@ export default function ProtectedRoute({ children, allowedRoles, routeId }) {
   const location = useLocation()
   const isAuthenticated = useAuthSessionStore((state) => state.isAuthenticated)
   const role = useAuthSessionStore((state) => state.role)
+  const hasHydrated = useAuthSessionStore((state) => state._hasHydrated)
+  
   const routeConfig = routeId ? NAV_ITEMS.find((item) => item.id === routeId) : null
   const roles = allowedRoles || routeConfig?.roles
+
+  if (!hasHydrated) {
+    return null // Wait for hydration before deciding to redirect
+  }
 
   if (!isAuthenticated) {
     return <Navigate to={ROUTES.LOGIN} replace state={{ from: location.pathname }} />
@@ -24,6 +30,11 @@ export default function ProtectedRoute({ children, allowedRoles, routeId }) {
 export function AuthenticatedRedirect({ children }) {
   const isAuthenticated = useAuthSessionStore((state) => state.isAuthenticated)
   const role = useAuthSessionStore((state) => state.role)
+  const hasHydrated = useAuthSessionStore((state) => state._hasHydrated)
+
+  if (!hasHydrated) {
+    return null // Wait for hydration
+  }
 
   if (isAuthenticated) {
     return <Navigate to={roleHome[role] || ROUTES.DASHBOARD} replace />

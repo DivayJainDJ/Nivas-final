@@ -21,6 +21,12 @@ const SettingsPage = lazy(() => import('./pages/SettingsPage.jsx'))
 function HomeRedirect() {
   const isAuthenticated = useAuthSessionStore((state) => state.isAuthenticated)
   const role = useAuthSessionStore((state) => state.role)
+  const hasHydrated = useAuthSessionStore((state) => state._hasHydrated)
+
+  if (!hasHydrated) {
+    return null
+  }
+
   return <Navigate to={isAuthenticated ? roleHome[role] || ROUTES.DASHBOARD : ROUTES.LOGIN} replace />
 }
 

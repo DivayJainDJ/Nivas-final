@@ -1,7 +1,6 @@
 import axios from 'axios'
 import { auth } from '../../firebase.js'
 import { normalizeApiError } from './errorHandler.js'
-import { withApiRoot } from './endpoints.js'
 
 const DEFAULT_TIMEOUT = 12000
 const MAX_RETRIES = 2
@@ -19,7 +18,7 @@ export function hasApiBaseURL() {
 }
 
 export const httpClient = axios.create({
-  baseURL: getApiBaseURL() ? `${getApiBaseURL()}${withApiRoot('')}` : '',
+  baseURL: getApiBaseURL() || '',
   timeout: Number(import.meta.env.VITE_API_TIMEOUT_MS || DEFAULT_TIMEOUT),
   headers: {
     'Content-Type': 'application/json',
