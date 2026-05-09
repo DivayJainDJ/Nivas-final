@@ -26,6 +26,12 @@ Acts as the secure gateway and orchestration layer between the client and the co
 A specialized suite of Python microservices designed to handle all AI processing, document parsing, scheduling, and external webhooks (like WhatsApp/Twilio).
 - **Connection:** Invoked internally by the BFF. It interacts with external APIs (Google Gemini, Document AI, Google Maps) and writes the processed intelligence back into **Firestore**. It also listens for external events (e.g., WhatsApp Webhooks) independently.
 
+### **D. Infrastructure & Cloud Resources (`infra`)**
+Contains the foundational configuration and deployment assets for Firebase and Google Cloud Platform (GCP).
+- **Firebase Resources:** Stores security rules (`firestore.rules`, `storage.rules`), composite index definitions, and Remote Config templates.
+- **GCP Resources:** Contains shell scripts (`setup.sh`) to enable required APIs, configure Pub/Sub topics, and define BigQuery schemas for advanced analytics.
+- **Connection:** This layer acts as the underlying environment. The Frontend interacts with Firebase services defined here. The BFF and AI Services read/write to Firestore and Pub/Sub topics defined by this configuration.
+
 ---
 
 ## 2. API Endpoints Breakdown
