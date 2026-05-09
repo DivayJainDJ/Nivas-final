@@ -33,7 +33,7 @@ export async function analyzeWard(ward) {
   }
 
   try {
-    const data = await postEndpoint('/analyzeWard', payload)
+    const data = await postEndpoint(`/wards/${ward.id}/analyze`, payload)
     return {
       analysis: {
         ...getFallbackAnalysis(ward.id),

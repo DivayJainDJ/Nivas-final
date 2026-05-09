@@ -25,7 +25,7 @@ export async function matchHousing(familyProfile) {
   }
 
   try {
-    const data = await postEndpoint('/matchHousing', { familyProfile })
+    const data = await postEndpoint('/housing/matches', { familyProfile })
     return {
       result: {
         ...createDemoMatch(familyProfile),
