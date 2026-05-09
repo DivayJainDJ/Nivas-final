@@ -6,6 +6,7 @@ Single repo for the Nivas project.
 
 - `frontend/` - React frontend currently used by your teammate
 - `ai-services/` - Python FastAPI AI services backend
+- `infra/` - Firebase and GCP setup assets for the unified repo
 
 ## AI Service Start
 

@@ -1,0 +1,197 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function getUserRole() {
+      return request.auth.token.role;
+    }
+    
+    function isResident() {
+      return getUserRole() == 'resident';
+    }
+    
+    function isOfficer() {
+      return getUserRole() == 'officer';
+    }
+    
+    function isAdmin() {
+      return getUserRole() == 'admin';
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function canAccessWard(wardId) {
+      return isAdmin() || (isOfficer() && 
+        exists(/databases/$(database)/documents/wardOfficers/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/wardOfficers/$(request.auth.uid)).data.wardId == wardId
+      );
+    }
+    
+    function timestampNow() {
+      return request.time;
+    }
+    
+    // Users collection
+    match /users/{userId} {
+      allow read, write: if isOwner(userId) || isAdmin();
+      allow create: if isAuthenticated() && 
+        isOwner(userId) &&
+        resource.data.keys().hasAll(['profile', 'role', 'createdAt']) &&
+        resource.data.profile.keys().hasAll(['firstName', 'phone']) &&
+        ['resident', 'officer', 'admin'].contains(resource.data.role);
+    }
+    
+    // Ward Officers collection (admin only)
+    match /wardOfficers/{officerId} {
+      allow read, write: if isAdmin();
+      allow create: if isAdmin() && 
+        resource.data.keys().hasAll(['userId', 'wardId', 'name', 'phoneNumber', 'createdAt']);
+    }
+    
+    // Complaints collection
+    match /complaints/{complaintId} {
+      allow read: if isAuthenticated() && (
+        isOwner(resource.data.userId) || 
+        canAccessWard(resource.data.wardId) ||
+        isAdmin()
+      );
+      
+      allow create: if isAuthenticated() && isOwner(resource.data.userId) &&
+        resource.data.keys().hasAll(['userId', 'title', 'description', 'location', 'wardId', 'status', 'createdAt']) &&
+        resource.data.status in ['pending', 'classification-failed'] &&
+        resource.data.location.keys().hasAll(['lat', 'lng', 'address']) &&
+        resource.data.title.size() > 3 &&
+        resource.data.description.size() > 10;
+      
+      allow update: if isAuthenticated() && (
+        isOwner(resource.data.userId) && (
+          // Residents can only update title, description, and photo
+          (request.writeFields().size() == 1 && request.writeFields().has('title')) ||
+          (request.writeFields().size() == 1 && request.writeFields().has('description')) ||
+          (request.writeFields().size() == 1 && request.writeFields().has('photoUrl'))
+        ) ||
+        canAccessWard(resource.data.wardId) && (
+          // Officers can update status, routedTo, notificationSent
+          request.writeFields().has('status') ||
+          request.writeFields().has('routedTo') ||
+          request.writeFields().has('notificationSent') ||
+          request.writeFields().has('routedAt')
+        ) ||
+        isAdmin()
+      );
+      
+      allow delete: if isAdmin();
+    }
+    
+    // Family Profiles collection
+    match /familyProfiles/{profileId} {
+      allow read, write: if isOwner(resource.data.userId) || isAdmin();
+      
+      allow create: if isAuthenticated() && isOwner(resource.data.userId) &&
+        resource.data.keys().hasAll(['userId', 'headOfFamily', 'householdSize', 'monthlyIncome', 'category', 'currentAddress', 'currentHousing', 'createdAt']) &&
+        resource.data.headOfFamily.keys().hasAll(['name', 'phone']) &&
+        resource.data.householdSize >= 1 && resource.data.householdSize <= 20 &&
+        resource.data.monthlyIncome >= 0 &&
+        ['ews', 'lig', 'mig', 'hig'].contains(resource.data.category) &&
+        resource.data.currentAddress.keys().hasAll(['line1', 'city', 'state', 'pincode']) &&
+        resource.data.currentHousing.keys().hasAll(['type', 'ownership', 'areaSqft', 'rooms', 'condition']);
+      
+      allow update: if isOwner(resource.data.userId) || isAdmin();
+      allow delete: if isOwner(resource.data.userId) || isAdmin();
+    }
+    
+    // Housing Units collection
+    match /housingUnits/{unitId} {
+      allow read: if isAuthenticated();
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // Housing Applications collection
+    match /housingApplications/{applicationId} {
+      allow read: if isOwner(resource.data.userId) || isAdmin() || canAccessWard(resource.data.wardId);
+      allow create: if isOwner(resource.data.userId) &&
+        resource.data.keys().hasAll(['userId', 'familyProfileId', 'housingUnitId', 'status', 'submittedAt']) &&
+        exists(/databases/$(database)/documents/familyProfiles/$(resource.data.familyProfileId)) &&
+        exists(/databases/$(database)/documents/housingUnits/$(resource.data.housingUnitId));
+      
+      allow update: if isAdmin() || canAccessWard(resource.data.wardId);
+      allow delete: if isAdmin();
+    }
+    
+    // Wards collection
+    match /wards/{wardId} {
+      allow read: if isAuthenticated();
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // Ward Analyses collection
+    match /wardAnalyses/{wardId} {
+      allow read: if isAuthenticated() && canAccessWard(wardId) || isAdmin();
+      allow create: if isAdmin() || canAccessWard(wardId);
+      allow update: if isAdmin() || canAccessWard(wardId);
+      allow delete: if isAdmin();
+    }
+    
+    // Ward Reports collection
+    match /wardReports/{wardId} {
+      allow read: if isAuthenticated() && canAccessWard(wardId) || isAdmin();
+      allow create: if isAdmin() || canAccessWard(wardId);
+      allow update: if isAdmin() || canAccessWard(wardId);
+      allow delete: if isAdmin();
+    }
+    
+    // Document Uploads collection
+    match /documentUploads/{docId} {
+      allow read: if isOwner(resource.data.userId) || isAdmin();
+      allow create: if isOwner(resource.data.userId) &&
+        resource.data.keys().hasAll(['userId', 'type', 'url', 'status', 'uploadedAt']) &&
+        ['aadhaar', 'pan', 'income_certificate', 'rent_agreement', 'ration_card'].contains(resource.data.type);
+      
+      allow update: if isAdmin();
+      allow delete: if isOwner(resource.data.userId) || isAdmin();
+    }
+    
+    // User Tokens collection (for FCM)
+    match /userTokens/{tokenId} {
+      allow read: if isOwner(resource.data.userId) || isAdmin();
+      allow create: if isOwner(resource.data.userId) &&
+        resource.data.keys().hasAll(['userId', 'token', 'role', 'deviceInfo', 'createdAt']) &&
+        resource.data.deviceInfo.keys().hasAll(['platform', 'version']);
+      
+      allow update: if isOwner(resource.data.userId) || isAdmin();
+      allow delete: if isOwner(resource.data.userId) || isAdmin();
+    }
+    
+    // Bot Sessions collection
+    match /botSessions/{sessionId} {
+      allow read: if isAdmin();
+      allow create: if true; // Anyone can create a bot session
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // System Status collection (admin only)
+    match /systemStatus/{statusId} {
+      allow read: if isAuthenticated();
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // Deny all other reads/writes
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

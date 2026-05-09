@@ -1,0 +1,108 @@
+{
+  "kind": "bigquery#table",
+  "schema": {
+    "fields": [
+      {
+        "name": "complaintId",
+        "type": "STRING",
+        "mode": "REQUIRED",
+        "description": "Unique identifier for the complaint"
+      },
+      {
+        "name": "wardId",
+        "type": "STRING",
+        "mode": "REQUIRED",
+        "description": "Ward where the complaint was filed"
+      },
+      {
+        "name": "event",
+        "type": "STRING",
+        "mode": "REQUIRED",
+        "description": "Type of event (created, classified, routed, resolved, escalated)"
+      },
+      {
+        "name": "timestamp",
+        "type": "TIMESTAMP",
+        "mode": "REQUIRED",
+        "description": "When the event occurred"
+      },
+      {
+        "name": "environment",
+        "type": "STRING",
+        "mode": "REQUIRED",
+        "description": "Environment (development, staging, production)"
+      },
+      {
+        "name": "userId",
+        "type": "STRING",
+        "mode": "NULLABLE",
+        "description": "User who filed the complaint"
+      },
+      {
+        "name": "category",
+        "type": "STRING",
+        "mode": "NULLABLE",
+        "description": "Complaint category (water, sanitation, roads, etc.)"
+      },
+      {
+        "name": "severity",
+        "type": "STRING",
+        "mode": "NULLABLE",
+        "description": "Complaint severity (low, medium, high, critical)"
+      },
+      {
+        "name": "status",
+        "type": "STRING",
+        "mode": "NULLABLE",
+        "description": "Current status of the complaint"
+      },
+      {
+        "name": "data",
+        "type": "JSON",
+        "mode": "NULLABLE",
+        "description": "Additional event data as JSON"
+      },
+      {
+        "name": "processingTime",
+        "type": "FLOAT",
+        "mode": "NULLABLE",
+        "description": "Time taken to process the event (in milliseconds)"
+      },
+      {
+        "name": "source",
+        "type": "STRING",
+        "mode": "NULLABLE",
+        "description": "Source of the event (web, mobile, bot, system)"
+      },
+      {
+        "name": "officerId",
+        "type": "STRING",
+        "mode": "NULLABLE",
+        "description": "Officer who handled the event (if applicable)"
+      },
+      {
+        "name": "resolutionTime",
+        "type": "FLOAT",
+        "mode": "NULLABLE",
+        "description": "Time to resolution (in hours)"
+      }
+    ]
+  },
+  "timePartitioning": {
+    "type": "DAY",
+    "field": "timestamp"
+  },
+  "clustering": {
+    "fields": [
+      {
+        "name": "wardId"
+      },
+      {
+        "name": "event"
+      },
+      {
+        "name": "timestamp"
+      }
+    ]
+  }
+}

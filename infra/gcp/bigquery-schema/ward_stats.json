@@ -1,0 +1,105 @@
+{
+  "kind": "bigquery#table",
+  "schema": {
+    "fields": [
+      {
+        "name": "wardId",
+        "type": "STRING",
+        "mode": "REQUIRED",
+        "description": "Unique identifier for the ward"
+      },
+      {
+        "name": "timestamp",
+        "type": "TIMESTAMP",
+        "mode": "REQUIRED",
+        "description": "When the stats were calculated"
+      },
+      {
+        "name": "environment",
+        "type": "STRING",
+        "mode": "REQUIRED",
+        "description": "Environment (development, staging, production)"
+      },
+      {
+        "name": "totalComplaints",
+        "type": "INTEGER",
+        "mode": "NULLABLE",
+        "description": "Total number of complaints in the ward"
+      },
+      {
+        "name": "unresolvedComplaints",
+        "type": "INTEGER",
+        "mode": "NULLABLE",
+        "description": "Number of unresolved complaints"
+      },
+      {
+        "name": "pressureScore",
+        "type": "FLOAT",
+        "mode": "NULLABLE",
+        "description": "Pressure score (0-1, higher means more pressure)"
+      },
+      {
+        "name": "avgResolutionTime",
+        "type": "FLOAT",
+        "mode": "NULLABLE",
+        "description": "Average resolution time in hours"
+      },
+      {
+        "name": "housingMatches",
+        "type": "INTEGER",
+        "mode": "NULLABLE",
+        "description": "Number of housing matches made in the period"
+      },
+      {
+        "name": "population",
+        "type": "INTEGER",
+        "mode": "NULLABLE",
+        "description": "Estimated population of the ward"
+      },
+      {
+        "name": "infraScore",
+        "type": "INTEGER",
+        "mode": "NULLABLE",
+        "description": "Overall infrastructure score (0-100)"
+      },
+      {
+        "name": "complaintsByCategory",
+        "type": "JSON",
+        "mode": "NULLABLE",
+        "description": "Breakdown of complaints by category"
+      },
+      {
+        "name": "complaintsBySeverity",
+        "type": "JSON",
+        "mode": "NULLABLE",
+        "description": "Breakdown of complaints by severity level"
+      },
+      {
+        "name": "lastAnalysisAt",
+        "type": "TIMESTAMP",
+        "mode": "NULLABLE",
+        "description": "When the last ward analysis was performed"
+      },
+      {
+        "name": "assignedOfficerCount",
+        "type": "INTEGER",
+        "mode": "NULLABLE",
+        "description": "Number of officers assigned to this ward"
+      }
+    ]
+  },
+  "timePartitioning": {
+    "type": "DAY",
+    "field": "timestamp"
+  },
+  "clustering": {
+    "fields": [
+      {
+        "name": "wardId"
+      },
+      {
+        "name": "timestamp"
+      }
+    ]
+  }
+}

@@ -1,0 +1,43 @@
+# Pub/Sub Topics for NivasAI Platform
+# Each line contains one topic name to be created
+
+# Complaint Processing
+complaint-classified
+complaint-routed
+complaint-escalated
+
+# Housing Processing
+housing-match-requested
+housing-application-created
+housing-application-updated
+
+# Ward Analysis
+ward-analysis-requested
+ward-analysis-completed
+ward-report-generated
+
+# Document Processing
+document-upload-completed
+document-parsed
+document-verified
+
+# Notifications
+broadcast-notification
+user-notification
+officer-notification
+admin-alert
+
+# Analytics and Monitoring
+analytics-aggregation
+performance-metrics
+error-alerts
+
+# Bot Communication
+bot-message-received
+bot-response-sent
+bot-session-expired
+
+# System Events
+system-maintenance
+system-alert
+feature-flag-changed

@@ -1,0 +1,61 @@
+# Required Google Cloud APIs for NivasAI Platform
+# Each line contains one API to be enabled
+
+# Core Firebase APIs
+firebase.googleapis.com
+firebasedatabase.googleapis.com
+firebaserules.googleapis.com
+firestore.googleapis.com
+storage.googleapis.com
+
+# AI and Machine Learning
+aiplatform.googleapis.com
+documentai.googleapis.com
+generativelanguage.googleapis.com
+
+# Maps and Location
+maps-platform.googleapis.com
+maps-backend.googleapis.com
+places.googleapis.com
+geocoding-backend.googleapis.com
+directions.googleapis.com
+
+# Communication and Messaging
+fcm.googleapis.com
+firebaseinstallations.googleapis.com
+
+# Data and Analytics
+bigquery.googleapis.com
+bigquerystorage.googleapis.com
+pubsub.googleapis.com
+
+# Compute and Serverless
+cloudfunctions.googleapis.com
+cloudscheduler.googleapis
+appengine.googleapis.com
+run.googleapis.com
+
+# Storage and Database
+storage-component.googleapis.com
+
+# Monitoring and Logging
+monitoring.googleapis.com
+logging.googleapis
+cloudtrace.googleapis
+errorreporting.googleapis.com
+
+# Identity and Access
+iam.googleapis.com
+iamcredentials.googleapis.com
+
+# Resource Management
+cloudresourcemanager.googleapis.com
+serviceusage.googleapis.com
+
+# Security and Networking
+iam.googleapis.com
+cloudkms.googleapis.com
+
+# Additional services
+cloudbuild.googleapis.com
+artifactregistry.googleapis.com

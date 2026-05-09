@@ -1,0 +1,101 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isValidImageType() {
+      return resource.contentType.matches('image/.*');
+    }
+    
+    function isValidDocumentType() {
+      return resource.contentType.matches('application/pdf') ||
+             resource.contentType.matches('image/jpeg') ||
+             resource.contentType.matches('image/png') ||
+             resource.contentType.matches('image/jpg');
+    }
+    
+    function isUnderSizeLimit() {
+      return resource.size < 10 * 1024 * 1024; // 10MB limit
+    }
+    
+    // Complaint photos
+    match /complaint-photos/{userId}/{allPaths=**} {
+      allow read: if isAuthenticated() && isOwner(userId);
+      allow write: if isAuthenticated() && isOwner(userId) && 
+        isValidImageType() && isUnderSizeLimit();
+      allow delete: if isAuthenticated() && isOwner(userId);
+    }
+    
+    // Housing documents
+    match /housing-documents/{userId}/{allPaths=**} {
+      allow read: if isAuthenticated() && isOwner(userId);
+      allow write: if isAuthenticated() && isOwner(userId) && 
+        isValidDocumentType() && isUnderSizeLimit();
+      allow delete: if isAuthenticated() && isOwner(userId);
+    }
+    
+    // Profile photos
+    match /profile-photos/{userId}/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && isOwner(userId) && 
+        isValidImageType() && isUnderSizeLimit();
+      allow delete: if isAuthenticated() && isOwner(userId);
+    }
+    
+    // Project images (ward analysis)
+    match /project-images/{wardId}/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && 
+        request.auth.token.role in ['officer', 'admin'] &&
+        isValidImageType() && isUnderSizeLimit();
+      allow delete: if isAuthenticated() && 
+        request.auth.token.role in ['officer', 'admin'];
+    }
+    
+    // Satellite images (AI analysis)
+    match /satellite-images/{wardId}/{allPaths=**} {
+      allow read: if isAuthenticated() && 
+        request.auth.token.role in ['officer', 'admin'];
+      allow write: if isAuthenticated() && 
+        request.auth.token.role in ['officer', 'admin'] &&
+        isValidImageType() && isUnderSizeLimit();
+      allow delete: if isAuthenticated() && 
+        request.auth.token.role in ['officer', 'admin'];
+    }
+    
+    // Document AI uploads
+    match /document-uploads/{userId}/{allPaths=**} {
+      allow read: if isAuthenticated() && isOwner(userId);
+      allow write: if isAuthenticated() && isOwner(userId) && 
+        isValidDocumentType() && isUnderSizeLimit();
+      allow delete: if isAuthenticated() && isOwner(userId);
+    }
+    
+    // Public assets (app logos, etc.)
+    match /public/{allPaths=**} {
+      allow read: if true;
+      allow write: if false;
+      allow delete: if false;
+    }
+    
+    // Temp uploads (for processing)
+    match /temp/{uploadId}/{allPaths=**} {
+      allow read, write: if isAuthenticated() && 
+        isValidDocumentType() && isUnderSizeLimit();
+      allow delete: if isAuthenticated();
+    }
+    
+    // Deny all other access
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

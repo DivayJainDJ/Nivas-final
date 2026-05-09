@@ -1,0 +1,326 @@
+{
+  "parameters": [
+    {
+      "key": "bot_enabled",
+      "valueType": "BOOLEAN",
+      "defaultValue": {
+        "value": true
+      },
+      "description": "Enable/disable WhatsApp bot functionality",
+      "public": false
+    },
+    {
+      "key": "matching_v2_enabled",
+      "valueType": "BOOLEAN",
+      "defaultValue": {
+        "value": true
+      },
+      "description": "Enable new housing matching algorithm v2",
+      "public": false
+    },
+    {
+      "key": "analytics_enabled",
+      "valueType": "BOOLEAN",
+      "defaultValue": {
+        "value": true
+      },
+      "description": "Enable real-time analytics aggregation",
+      "public": false
+    },
+    {
+      "key": "complaint_classification_enabled",
+      "valueType": "BOOLEAN",
+      "defaultValue": {
+        "value": true
+      },
+      "description": "Enable AI-powered complaint classification",
+      "public": false
+    },
+    {
+      "key": "ward_analysis_enabled",
+      "valueType": "BOOLEAN",
+      "defaultValue": {
+        "value": true
+      },
+      "description": "Enable ward infrastructure analysis",
+      "public": false
+    },
+    {
+      "key": "document_parsing_enabled",
+      "valueType": "BOOLEAN",
+      "defaultValue": {
+        "value": true
+      },
+      "description": "Enable Document AI parsing for housing documents",
+      "public": false
+    },
+    {
+      "key": "notification_broadcast_enabled",
+      "valueType": "BOOLEAN",
+      "defaultValue": {
+        "value": true
+      },
+      "description": "Enable multi-channel notification broadcasting",
+      "public": false
+    },
+    {
+      "key": "max_complaint_photos",
+      "valueType": "NUMBER",
+      "defaultValue": {
+        "value": 3
+      },
+      "description": "Maximum number of photos allowed per complaint",
+      "public": false
+    },
+    {
+      "key": "max_file_size_mb",
+      "valueType": "NUMBER",
+      "defaultValue": {
+        "value": 10
+      },
+      "description": "Maximum file size in MB for uploads",
+      "public": false
+    },
+    {
+      "key": "complaint_auto_resolve_hours",
+      "valueType": "NUMBER",
+      "defaultValue": {
+        "value": 72
+      },
+      "description": "Hours after which complaints are auto-resolved if no action",
+      "public": false
+    },
+    {
+      "key": "housing_matching_radius_km",
+      "valueType": "NUMBER",
+      "defaultValue": {
+        "value": 25
+      },
+      "description": "Maximum distance in km for housing matching",
+      "public": false
+    },
+    {
+      "key": "min_housing_match_score",
+      "valueType": "NUMBER",
+      "defaultValue": {
+        "value": 60
+      },
+      "description": "Minimum score required for housing match (0-100)",
+      "public": false
+    },
+    {
+      "key": "analytics_aggregation_interval_minutes",
+      "valueType": "NUMBER",
+      "defaultValue": {
+        "value": 60
+      },
+      "description": "Interval in minutes for analytics aggregation",
+      "public": false
+    },
+    {
+      "key": "high_pressure_threshold",
+      "valueType": "NUMBER",
+      "defaultValue": {
+        "value": 0.7
+      },
+      "description": "Pressure score threshold for high alert (0-1)",
+      "public": false
+    },
+    {
+      "key": "gemini_confidence_threshold",
+      "valueType": "NUMBER",
+      "defaultValue": {
+        "value": 0.7
+      },
+      "description": "Minimum confidence threshold for Gemini AI classifications",
+      "public": false
+    },
+    {
+      "key": "bot_session_timeout_minutes",
+      "valueType": "NUMBER",
+      "defaultValue": {
+        "value": 30
+      },
+      "description": "Minutes after which bot sessions expire",
+      "public": false
+    },
+    {
+      "key": "notification_retry_attempts",
+      "valueType": "NUMBER",
+      "defaultValue": {
+        "value": 3
+      },
+      "description": "Number of retry attempts for failed notifications",
+      "public": false
+    },
+    {
+      "key": "fcm_batch_size",
+      "valueType": "NUMBER",
+      "defaultValue": {
+        "value": 500
+      },
+      "description": "Batch size for FCM multicast notifications",
+      "public": false
+    },
+    {
+      "key": "supported_image_types",
+      "valueType": "JSON",
+      "defaultValue": {
+        "value": ["image/jpeg", "image/png", "image/jpg"]
+      },
+      "description": "Supported image MIME types for uploads",
+      "public": false
+    },
+    {
+      "key": "supported_document_types",
+      "valueType": "JSON",
+      "defaultValue": {
+        "value": ["application/pdf", "image/jpeg", "image/png"]
+      },
+      "description": "Supported document MIME types for uploads",
+      "public": false
+    },
+    {
+      "key": "complaint_categories",
+      "valueType": "JSON",
+      "defaultValue": {
+        "value": ["water", "sanitation", "roads", "electricity", "waste", "eviction", "housing", "other"]
+      },
+      "description": "Available complaint categories",
+      "public": true
+    },
+    {
+      "key": "complaint_severity_levels",
+      "valueType": "JSON",
+      "defaultValue": {
+        "value": ["low", "medium", "high", "critical"]
+      },
+      "description": "Available complaint severity levels",
+      "public": true
+    },
+    {
+      "key": "housing_categories",
+      "valueType": "JSON",
+      "defaultValue": {
+        "value": ["ews", "lig", "mig", "hig"]
+      },
+      "description": "Available housing categories",
+      "public": true
+    },
+    {
+      "key": "housing_schemes",
+      "valueType": "JSON",
+      "defaultValue": {
+        "value": ["pmay", "rajasthan", "karnataka", "private"]
+      },
+      "description": "Available housing schemes",
+      "public": true
+    },
+    {
+      "key": "supported_states",
+      "valueType": "JSON",
+      "defaultValue": {
+        "value": ["karnataka", "rajasthan", "maharashtra", "delhi", "tamil_nadu"]
+      },
+      "description": "Supported states for the platform",
+      "public": true
+    },
+    {
+      "key": "maintenance_mode",
+      "valueType": "BOOLEAN",
+      "defaultValue": {
+        "value": false
+      },
+      "description": "Put the application in maintenance mode",
+      "public": true
+    },
+    {
+      "key": "maintenance_message",
+      "valueType": "STRING",
+      "defaultValue": {
+        "value": "NivasAI is temporarily unavailable for maintenance. Please try again later."
+      },
+      "description": "Message to show during maintenance",
+      "public": true
+    },
+    {
+      "key": "feature_announcement",
+      "valueType": "STRING",
+      "defaultValue": {
+        "value": ""
+      },
+      "description": "Feature announcement message for users",
+      "public": true
+    },
+    {
+      "key": "version_info",
+      "valueType": "JSON",
+      "defaultValue": {
+        "value": {
+          "frontend": "1.0.0",
+          "backend": "1.0.0",
+          "infrastructure": "1.0.0"
+        }
+      },
+      "description": "Current version information for all components",
+      "public": true
+    },
+    {
+      "key": "rate_limits",
+      "valueType": "JSON",
+      "defaultValue": {
+        "value": {
+          "complaints_per_hour": 10,
+          "housing_applications_per_day": 5,
+          "bot_messages_per_hour": 20,
+          "ward_analyses_per_day": 3
+        }
+      },
+      "description": "Rate limits per user for various features",
+      "public": false
+    },
+    {
+      "key": "feature_flags",
+      "valueType": "JSON",
+      "defaultValue": {
+        "value": {
+          "new_dashboard": true,
+          "advanced_analytics": true,
+          "multi_language": false,
+          "offline_mode": false,
+          "push_notifications": true,
+          "email_notifications": false,
+          "sms_notifications": false,
+          "whatsapp_notifications": true
+        }
+      },
+      "description": "Feature flags for experimental or optional features",
+      "public": false
+    }
+  ],
+  "conditions": [
+    {
+      "name": "maintenance_mode_active",
+      "expression": "maintenance_mode == true",
+      "tags": ["maintenance"]
+    },
+    {
+      "name": "all_ai_features_enabled",
+      "expression": "bot_enabled && matching_v2_enabled && analytics_enabled && complaint_classification_enabled && ward_analysis_enabled && document_parsing_enabled",
+      "tags": ["ai", "features"]
+    },
+    {
+      "name": "high_load_mode",
+      "expression": "analytics_aggregation_interval_minutes < 30",
+      "tags": ["performance"]
+    }
+  ],
+  "version": {
+    "versionNumber": "1",
+    "updateTime": "2024-01-01T00:00:00.000Z",
+    "updateOrigin": "ADMIN_CONSOLE",
+    "updateUser": "admin@nivasai.org",
+    "description": "Initial Remote Config template for NivasAI platform",
+    "rollbackSource": "REMOTE_CONFIG_TEMPLATE"
+  }
+}

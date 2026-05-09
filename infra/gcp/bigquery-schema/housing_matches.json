@@ -1,0 +1,144 @@
+{
+  "kind": "bigquery#table",
+  "schema": {
+    "fields": [
+      {
+        "name": "matchId",
+        "type": "STRING",
+        "mode": "REQUIRED",
+        "description": "Unique identifier for the housing match"
+      },
+      {
+        "name": "userId",
+        "type": "STRING",
+        "mode": "REQUIRED",
+        "description": "User who requested the match"
+      },
+      {
+        "name": "familyProfileId",
+        "type": "STRING",
+        "mode": "REQUIRED",
+        "description": "Family profile used for matching"
+      },
+      {
+        "name": "housingUnitId",
+        "type": "STRING",
+        "mode": "REQUIRED",
+        "description": "Housing unit that was matched"
+      },
+      {
+        "name": "timestamp",
+        "type": "TIMESTAMP",
+        "mode": "REQUIRED",
+        "description": "When the match was generated"
+      },
+      {
+        "name": "environment",
+        "type": "STRING",
+        "mode": "REQUIRED",
+        "description": "Environment (development, staging, production)"
+      },
+      {
+        "name": "matchScore",
+        "type": "FLOAT",
+        "mode": "NULLABLE",
+        "description": "Match score (0-100)"
+      },
+      {
+        "name": "rank",
+        "type": "INTEGER",
+        "mode": "NULLABLE",
+        "description": "Rank in the match results (1 = best match)"
+      },
+      {
+        "name": "distance",
+        "type": "FLOAT",
+        "mode": "NULLABLE",
+        "description": "Distance from user location (in km)"
+      },
+      {
+        "name": "category",
+        "type": "STRING",
+        "mode": "NULLABLE",
+        "description": "Housing category (ews, lig, mig, hig)"
+      },
+      {
+        "name": "scheme",
+        "type": "STRING",
+        "mode": "NULLABLE",
+        "description": "Housing scheme (pmay, rajasthan, karnataka, private)"
+      },
+      {
+        "name": "price",
+        "type": "FLOAT",
+        "mode": "NULLABLE",
+        "description": "Price of the housing unit"
+      },
+      {
+        "name": "monthlyIncome",
+        "type": "FLOAT",
+        "mode": "NULLABLE",
+        "description": "User's monthly income"
+      },
+      {
+        "name": "householdSize",
+        "type": "INTEGER",
+        "mode": "NULLABLE",
+        "description": "Number of people in household"
+      },
+      {
+        "name": "wardId",
+        "type": "STRING",
+        "mode": "NULLABLE",
+        "description": "Ward where the housing unit is located"
+      },
+      {
+        "name": "eligible",
+        "type": "BOOLEAN",
+        "mode": "NULLABLE",
+        "description": "Whether the user is eligible for this unit"
+      },
+      {
+        "name": "applicationStatus",
+        "type": "STRING",
+        "mode": "NULLABLE",
+        "description": "Status of any application (pending, approved, rejected)"
+      },
+      {
+        "name": "processingTime",
+        "type": "FLOAT",
+        "mode": "NULLABLE",
+        "description": "Time taken to generate the match (in milliseconds)"
+      },
+      {
+        "name": "algorithmVersion",
+        "type": "STRING",
+        "mode": "NULLABLE",
+        "description": "Version of the matching algorithm used"
+      },
+      {
+        "name": "source",
+        "type": "STRING",
+        "mode": "NULLABLE",
+        "description": "Source of the match request (web, mobile, bot)"
+      }
+    ]
+  },
+  "timePartitioning": {
+    "type": "DAY",
+    "field": "timestamp"
+  },
+  "clustering": {
+    "fields": [
+      {
+        "name": "userId"
+      },
+      {
+        "name": "housingUnitId"
+      },
+      {
+        "name": "timestamp"
+      }
+    ]
+  }
+}
