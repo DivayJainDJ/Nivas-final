@@ -155,7 +155,7 @@ export const useHousingMatch = () => {
     },
   })
 
-  // Get eligibility explanation from Gemini
+  // Get eligibility explanation through the BFF housing workflow
   const getEligibilityExplanation = async (unit: HousingUnit) => {
     if (!familyProfile) return ''
 
@@ -167,7 +167,7 @@ export const useHousingMatch = () => {
     }
   }
 
-  // Get document checklist from Gemini
+  // Get document checklist through the BFF housing workflow
   const getDocumentChecklist = async (unit: HousingUnit) => {
     if (!familyProfile) return []
 

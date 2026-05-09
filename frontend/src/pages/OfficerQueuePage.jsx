@@ -8,7 +8,7 @@ import ComplaintDetailDrawer from '@/components/complaints/ComplaintDetailDrawer
 import ComplaintQueue from '@/components/complaints/ComplaintQueue.jsx'
 import ComplaintsMap from '@/components/complaints/ComplaintsMap.jsx'
 import { demoComplaints } from '@/mock/complaintsDemoData.js'
-import { listenToComplaints, updateComplaintStatus } from '@/services/complaintsRepository.js'
+import { listComplaints, listenToComplaints, updateComplaintStatus } from '@/services/complaintsRepository.js'
 import { useOfficerStore } from '@/store/officerStore.js'
 
 function reducedMotion() {
@@ -79,15 +79,28 @@ export default function OfficerQueuePage() {
   }, [])
 
   useEffect(() => {
+    let cancelled = false
+    let unsubscribe = () => {}
+    listComplaints()
+      .then((items) => {
+        if (!cancelled && items.length) setComplaints(items)
+      })
+      .catch(() => {})
     try {
-      const unsubscribe = listenToComplaints(
-        (items) => setComplaints(items.length ? items : seeded),
-        () => setComplaints(seeded),
+      unsubscribe = listenToComplaints(
+        (items) => {
+          if (!cancelled) setComplaints(items.length ? items : seeded)
+        },
+        () => {
+          if (!cancelled) setComplaints(seeded)
+        },
       )
-      return unsubscribe
     } catch {
       setComplaints(seeded)
-      return undefined
+    }
+    return () => {
+      cancelled = true
+      unsubscribe()
     }
   }, [seeded])
 

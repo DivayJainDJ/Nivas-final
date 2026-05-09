@@ -1,47 +1,41 @@
-import axios from 'axios'
 import { adminAnalytics } from '../mock/adminAnalyticsData.js'
+import { listComplaints } from '../repositories/complaintsRepository.js'
+import { fetchWards } from '../repositories/wardsRepository.js'
+import { systemApi } from '../lib/api/systemApi.js'
 
-const adminClient = axios.create({
-  baseURL: import.meta.env.VITE_ADMIN_API_BASE_URL || '/api',
-  timeout: 4200,
-})
-
-async function fetchFirestoreAdminSnapshot() {
-  const [{ collection, getDocs, limit, query }, { firestore }] = await Promise.all([
-    import('firebase/firestore'),
-    import('../config/firebase'),
-  ])
-
-  const [wardsSnapshot, complaintsSnapshot, housingSnapshot] = await Promise.all([
-    getDocs(query(collection(firestore, 'wards'), limit(20))),
-    getDocs(query(collection(firestore, 'complaints'), limit(80))),
-    getDocs(query(collection(firestore, 'housingUnits'), limit(40))),
-  ])
-
+function buildConnectedAnalytics({ health, wards, complaints }) {
+  const activeComplaints = complaints.filter((item) => item.status !== 'resolved' && item.status !== 'Resolved')
   return {
     ...adminAnalytics,
-    seededMode: false,
+    seededMode: !health && !wards.length && !complaints.length,
     firestoreCounts: {
-      wards: wardsSnapshot.size,
-      complaints: complaintsSnapshot.size,
-      housingUnits: housingSnapshot.size,
+      wards: wards.length,
+      complaints: complaints.length,
+      housingUnits: adminAnalytics.housingSnapshot.availableUnits,
     },
+    executiveMetrics: adminAnalytics.executiveMetrics.map((metric) => {
+      if (metric.id === 'signals') return { ...metric, value: activeComplaints.length || metric.value }
+      if (metric.id === 'wards') return { ...metric, value: wards.length || metric.value }
+      return metric
+    }),
+    systemHealth: adminAnalytics.systemHealth.map((service) => (
+      service.name.includes('BFF') || service.name.includes('API')
+        ? { ...service, status: health ? 'Operational' : 'Continuity', quality: health ? 98 : 84 }
+        : service
+    )),
   }
 }
 
 export async function fetchAdminAnalytics() {
   try {
-    if (import.meta.env.VITE_USE_REAL_ADMIN_API === 'true') {
-      const response = await adminClient.get('/admin/analytics')
-      return { ...adminAnalytics, ...response.data, seededMode: false }
-    }
-
-    if (import.meta.env.VITE_USE_FIRESTORE_ADMIN === 'true') {
-      return await fetchFirestoreAdminSnapshot()
-    }
-
-    return adminAnalytics
+    const [health, wards, complaints] = await Promise.all([
+      systemApi.health().catch(() => null),
+      fetchWards().catch(() => []),
+      listComplaints().catch(() => []),
+    ])
+    return buildConnectedAnalytics({ health, wards, complaints })
   } catch {
     return adminAnalytics
   }
 }
+

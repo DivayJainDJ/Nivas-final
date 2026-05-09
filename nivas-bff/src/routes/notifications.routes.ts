@@ -8,4 +8,5 @@ import { registerTokenSchema } from '../validators/notifications.js';
 export const notificationsRouter = Router();
 
 notificationsRouter.use(requireAuth);
+notificationsRouter.post('/register', validateBody(registerTokenSchema), asyncHandler(registerNotificationToken));
 notificationsRouter.post('/register-token', validateBody(registerTokenSchema), asyncHandler(registerNotificationToken));

@@ -3,10 +3,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuthStore } from '@/store/authStore'
 import { useComplaintStore } from '@/store/complaintStore'
 import { Complaint, ComplaintFilter, ComplaintStatus } from '@/types/complaint.types'
-import { firestoreService } from '@/services/firestoreService'
-import { realtimeService } from '@/services/realtimeService'
-import { storageService } from '@/services/storageService'
-import { geminiService } from '@/services/geminiService'
+import { createComplaint as createComplaintRecord, listComplaints, listenToComplaints, updateComplaintStatus, uploadComplaintPhoto } from '@/services/complaintsRepository.js'
+import { complaintsApi } from '@/lib/api/complaintsApi.js'
 
 export const useComplaints = (filters?: ComplaintFilter) => {
   const { user } = useAuthStore()
@@ -21,7 +19,7 @@ export const useComplaints = (filters?: ComplaintFilter) => {
     refetch,
   } = useQuery({
     queryKey: ['complaints', filters, user?.role],
-    queryFn: () => firestoreService.getComplaints(filters),
+    queryFn: () => listComplaints(filters as any),
     staleTime: 2 * 60 * 1000, // 2 minutes
     enabled: !!user,
   })
@@ -54,23 +52,7 @@ export const useComplaints = (filters?: ComplaintFilter) => {
       
       // Upload photo if provided
       if (data.photoFile) {
-        photoUrl = await storageService.uploadComplaintPhoto(data.photoFile, user.uid)
-      }
-
-      // Analyze photo with Gemini if provided
-      let aiClassification
-      if (data.photoFile && photoUrl) {
-        try {
-          const analysis = await geminiService.analyzeComplaintImage(photoUrl)
-          aiClassification = {
-            category: analysis.category as any,
-            severity: analysis.severity as any,
-            confidence: analysis.confidence,
-            suggestedAction: analysis.suggestedAction,
-          }
-        } catch (error) {
-          console.warn('AI analysis failed:', error)
-        }
+        photoUrl = await uploadComplaintPhoto(data.photoFile, user.uid)
       }
 
       const complaint: Omit<Complaint, 'id'> = {
@@ -82,13 +64,14 @@ export const useComplaints = (filters?: ComplaintFilter) => {
         title: data.title,
         description: data.description,
         photoUrl,
-        wardId: await getWardIdFromLocation(data.location),
+        wardId: 'unknown',
         timestamp: new Date(),
-        aiClassification,
+        aiClassification: undefined,
         updates: [],
       }
 
-      return firestoreService.createComplaint(complaint)
+      const id = await createComplaintRecord({ ...complaint, wardId: complaint.wardId, photoUrl })
+      return { id, ...complaint } as Complaint
     },
     onSuccess: (newComplaint) => {
       addComplaint(newComplaint)
@@ -122,7 +105,8 @@ export const useComplaints = (filters?: ComplaintFilter) => {
         ],
       }
 
-      return firestoreService.updateComplaint(complaintId, update)
+      await updateComplaintStatus(complaintId, status, remarks)
+      return update
     },
     onSuccess: (_, variables) => {
       updateComplaint(variables.complaintId, {
@@ -139,42 +123,10 @@ export const useComplaints = (filters?: ComplaintFilter) => {
   useEffect(() => {
     if (!user) return
 
-    const unsubscribe = realtimeService.subscribeToComplaints(
-      (updatedComplaint) => {
-        updateComplaint(updatedComplaint.id, updatedComplaint)
-      },
-      user.role === 'admin' ? undefined : user.uid
-    )
+    const unsubscribe = listenToComplaints((items: Complaint[]) => setComplaints(items))
 
     return unsubscribe
-  }, [user, updateComplaint])
-
-  // Helper function to get ward ID from coordinates
-  const getWardIdFromLocation = async (location: { lat: number; lng: number }) => {
-    try {
-      const wards = await firestoreService.getWards()
-      for (const ward of wards) {
-        if (isPointInWard(location, ward)) {
-          return ward.id
-        }
-      }
-      return 'unknown'
-    } catch (error) {
-      console.error('Error getting ward ID:', error)
-      return 'unknown'
-    }
-  }
-
-  // Check if point is within ward boundaries
-  const isPointInWard = (point: { lat: number; lng: number }, ward: any) => {
-    const { bounds } = ward.coordinates
-    return (
-      point.lat >= bounds.southwest.lat &&
-      point.lat <= bounds.northeast.lat &&
-      point.lng >= bounds.southwest.lng &&
-      point.lng <= bounds.northeast.lng
-    )
-  }
+  }, [user, setComplaints])
 
   // Get filtered complaints
   const filteredComplaints = getFilteredComplaints()
@@ -197,7 +149,16 @@ export const useComplaintStats = () => {
 
   return useQuery({
     queryKey: ['complaint-stats', user?.role],
-    queryFn: () => firestoreService.getComplaintStats(user?.role === 'admin' ? undefined : user?.uid),
+    queryFn: async () => {
+      const complaints = await listComplaints(user?.role === 'admin' ? {} : { userId: user?.uid } as any)
+      return {
+        total: complaints.length,
+        pending: complaints.filter((item: any) => item.status === 'pending').length,
+        inProgress: complaints.filter((item: any) => item.status === 'in_progress').length,
+        resolved: complaints.filter((item: any) => item.status === 'resolved').length,
+        escalated: complaints.filter((item: any) => item.status === 'escalated').length,
+      } as any
+    },
     staleTime: 5 * 60 * 1000, // 5 minutes
     enabled: !!user,
   })
@@ -209,7 +170,10 @@ export const useComplaint = (complaintId: string) => {
 
   return useQuery({
     queryKey: ['complaint', complaintId],
-    queryFn: () => firestoreService.getComplaint(complaintId),
+    queryFn: async () => {
+      const response = await complaintsApi.getComplaint(complaintId)
+      return (response as any).complaint || response
+    },
     enabled: !!complaintId,
     onSuccess: (complaint) => {
       setSelectedComplaint(complaint)

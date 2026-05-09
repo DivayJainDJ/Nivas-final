@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { useSearchParams } from 'react-router-dom'
 import gsap from 'gsap'
 import { Sparkles } from 'lucide-react'
@@ -9,6 +9,7 @@ import PlannerMap from '../components/slumPlanner/PlannerMap.jsx'
 import RecommendationTable from '../components/slumPlanner/RecommendationTable.jsx'
 import WardPlanningPanel from '../components/slumPlanner/WardPlanningPanel.jsx'
 import { plannerWards, scanSteps } from '../mock/slumPlannerData.js'
+import { fetchWards } from '../repositories/wardsRepository.js'
 import { analyzeWardInfrastructure } from '../services/slumPlannerApi.js'
 import { useSlumPlannerStore } from '../store/slumPlannerStore.js'
 import { useShellStore } from '../store/shellStore.js'
@@ -64,20 +65,36 @@ export default function SlumPlannerPage() {
   const setScanStep = useSlumPlannerStore((state) => state.setScanStep)
   const setAnalysis = useSlumPlannerStore((state) => state.setAnalysis)
   const stopScanning = useSlumPlannerStore((state) => state.stopScanning)
-  const selectedWard = useMemo(() => plannerWards.find((ward) => ward.id === selectedWardId) || plannerWards[0], [selectedWardId])
+  const { data: connectedWards = plannerWards } = useQuery({
+    queryKey: ['wards'],
+    queryFn: () => fetchWards(),
+    placeholderData: plannerWards,
+  })
+  const wards = useMemo(() => {
+    const byId = new Map(plannerWards.map((ward) => [ward.id, ward]))
+    return connectedWards.map((ward, index) => ({
+      ...(byId.get(ward.id) || plannerWards[index % plannerWards.length]),
+      ...ward,
+      shortName: ward.shortName || ward.name || byId.get(ward.id)?.shortName,
+      center: ward.center || { lat: ward.lat, lng: ward.lng },
+      lat: ward.lat ?? ward.center?.lat,
+      lng: ward.lng ?? ward.center?.lng,
+    }))
+  }, [connectedWards])
+  const selectedWard = useMemo(() => wards.find((ward) => ward.id === selectedWardId) || wards[0] || plannerWards[0], [selectedWardId, wards])
 
   useEffect(() => {
     const wardParam = searchParams.get('ward')
     if (!wardParam) return
     const resolvedWardParam = slumPlannerWardId(wardParam)
     const normalized = resolvedWardParam.toLowerCase()
-    const matched = plannerWards.find((ward) => (
+    const matched = wards.find((ward) => (
       ward.id === resolvedWardParam ||
       normalized.includes(ward.shortName.toLowerCase().replace(/\s+/g, '-')) ||
       ward.shortName.toLowerCase().replace(/\s+/g, '-').includes(normalized.replace('ward-', ''))
     ))
     if (matched && matched.id !== selectedWardId) setSelectedWardId(matched.id)
-  }, [searchParams, selectedWardId, setSelectedWardId])
+  }, [searchParams, selectedWardId, setSelectedWardId, wards])
 
   const mutation = useMutation({
     mutationFn: analyzeWardInfrastructure,
@@ -140,7 +157,7 @@ export default function SlumPlannerPage() {
       <section className="grid gap-5 xl:grid-cols-[350px_minmax(0,1fr)_430px]">
         <div data-reveal>
           <WardPlanningPanel
-            wards={plannerWards}
+            wards={wards}
             selectedWard={selectedWard}
             isScanning={isScanning}
             scanSteps={scanSteps}

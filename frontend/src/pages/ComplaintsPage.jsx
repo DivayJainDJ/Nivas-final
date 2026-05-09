@@ -11,6 +11,7 @@ import ReportIssueModal from '../components/complaints/ReportIssueModal.jsx'
 import { demoComplaints } from '../mock/complaintsDemoData.js'
 import {
   createComplaint,
+  listComplaints,
   listenToComplaints,
   updateComplaintStatus,
   uploadComplaintPhoto,
@@ -100,22 +101,36 @@ export default function ComplaintsPage() {
   }, [])
 
   useEffect(() => {
+    let cancelled = false
+    let unsubscribe = () => {}
+    listComplaints()
+      .then((items) => {
+        if (!cancelled && items.length) {
+          setComplaints(items)
+          setDemoMode(false)
+        }
+      })
+      .catch(() => {})
     try {
-      const unsubscribe = listenToComplaints(
+      unsubscribe = listenToComplaints(
         (items) => {
+          if (cancelled) return
           setComplaints(items.length ? items : seeded)
           setDemoMode(false)
         },
         () => {
+          if (cancelled) return
           setComplaints(seeded)
           setDemoMode(true)
         },
       )
-      return unsubscribe
     } catch {
       setComplaints(seeded)
       setDemoMode(true)
-      return undefined
+    }
+    return () => {
+      cancelled = true
+      unsubscribe()
     }
   }, [seeded, setDemoMode])
 
@@ -150,6 +165,7 @@ export default function ComplaintsPage() {
     const basePayload = {
       residentId: `resident-${Date.now()}`,
       residentPhone: values.residentPhone,
+      title: values.category,
       wardId: values.wardId,
       wardName: values.wardName,
       location: values.location,

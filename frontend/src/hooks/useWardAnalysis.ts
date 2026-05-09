@@ -93,7 +93,7 @@ export const useWardAnalysis = () => {
         19 // zoom level
       )
 
-      // Analyze with Gemini
+      // Analyze through the BFF-managed AI service
       const analysis = await geminiService.analyzeWardInfrastructure(
         satelliteImage.url,
         ward

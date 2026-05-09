@@ -9,16 +9,47 @@ import {
   updateDoc,
 } from 'firebase/firestore'
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage'
+import { complaintsApi } from '../lib/api/complaintsApi.js'
 import { getFirebaseDb, getFirebaseStorage } from './firebaseApp.js'
 
-function normalizeDoc(snapshot) {
-  const data = snapshot.data()
+function formatTimestamp(value) {
+  if (!value) return ''
+  if (value.toDate) return value.toDate().toLocaleString('en-IN')
+  if (typeof value === 'string') return value
+  return new Date(value).toLocaleString('en-IN')
+}
+
+function normalizeComplaint(data = {}, id) {
+  const category = data.category || data.title || 'Civic issue'
+  const severity = String(data.severity || data.priority || 'medium').toLowerCase()
+  const status = String(data.status || 'pending').toLowerCase()
   return {
-    id: snapshot.id,
-    ...data,
-    createdAt: data.createdAt?.toDate ? data.createdAt.toDate().toLocaleString('en-IN') : data.createdAt,
-    updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate().toLocaleString('en-IN') : data.updatedAt,
+    id: id || data.id || data._id,
+    residentId: data.residentId || data.userId || data.createdBy || '',
+    residentPhone: data.residentPhone || data.phone || '',
+    wardId: data.wardId || 'unknown',
+    wardName: data.wardName || data.ward?.name || data.wardId || 'Ward pending',
+    location: data.location || { lat: 12.9716, lng: 77.5946 },
+    address: data.address || data.location?.address || 'Location pending',
+    category,
+    title: data.title || category,
+    severity,
+    status,
+    photoUrl: data.photoUrl || data.imageUrl || '',
+    geminiSummary: data.aiSummary || data.geminiSummary || data.summary || '',
+    suggestedDepartment: data.suggestedDepartment || data.department || '',
+    confidence: data.confidence || data.aiConfidence || 0,
+    routedTo: data.routedTo || data.assignedOfficerName || data.assignedTo || '',
+    description: data.description || '',
+    notes: data.notes || '',
+    timeline: data.timeline || [{ label: 'Complaint received', time: formatTimestamp(data.createdAt) || 'Recently' }],
+    createdAt: formatTimestamp(data.createdAt || data.timestamp) || 'Recently',
+    updatedAt: formatTimestamp(data.updatedAt) || formatTimestamp(data.createdAt) || 'Recently',
   }
+}
+
+function normalizeSnapshot(snapshot) {
+  return normalizeComplaint(snapshot.data(), snapshot.id)
 }
 
 export async function uploadComplaintPhoto(file, complaintId) {
@@ -30,57 +61,78 @@ export async function uploadComplaintPhoto(file, complaintId) {
   return getDownloadURL(result.ref)
 }
 
-export async function createComplaint(payload) {
+async function createComplaintInFirestore(payload) {
   const db = getFirebaseDb()
   const docRef = await addDoc(collection(db, 'complaints'), {
-    residentId: payload.residentId,
-    residentPhone: payload.residentPhone,
-    wardId: payload.wardId,
-    wardName: payload.wardName,
-    location: payload.location,
-    address: payload.address,
-    category: payload.category,
-    severity: payload.severity,
+    ...payload,
     status: payload.status || 'pending',
-    photoUrl: payload.photoUrl || '',
-    geminiSummary: payload.geminiSummary || '',
-    suggestedDepartment: payload.suggestedDepartment || '',
-    confidence: payload.confidence || 0,
-    routedTo: payload.routedTo || '',
-    description: payload.description,
-    notes: payload.notes || '',
-    timeline: payload.timeline || [{ label: 'Complaint received', time: 'Just now' }],
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   })
-
   return docRef.id
 }
 
+export async function createComplaint(payload) {
+  try {
+    const response = await complaintsApi.createComplaint(payload)
+    return response?.id || response?.complaint?.id || response?.complaintId || normalizeComplaint(response).id || payload.id
+  } catch {
+    return createComplaintInFirestore(payload)
+  }
+}
+
+export async function listComplaints(params = {}) {
+  try {
+    const response = await complaintsApi.listComplaints(params)
+    const items = response?.complaints || response?.items || response || []
+    return Array.isArray(items) ? items.map((item) => normalizeComplaint(item)) : []
+  } catch {
+    return []
+  }
+}
+
 export function listenToComplaints(onData, onError) {
-  const db = getFirebaseDb()
-  const complaintsQuery = query(collection(db, 'complaints'), orderBy('createdAt', 'desc'))
-  return onSnapshot(
-    complaintsQuery,
-    (snapshot) => onData(snapshot.docs.map(normalizeDoc)),
-    (error) => onError?.(error),
-  )
+  try {
+    const db = getFirebaseDb()
+    const complaintsQuery = query(collection(db, 'complaints'), orderBy('createdAt', 'desc'))
+    return onSnapshot(
+      complaintsQuery,
+      (snapshot) => onData(snapshot.docs.map(normalizeSnapshot)),
+      (error) => onError?.(error),
+    )
+  } catch (error) {
+    onError?.(error)
+    return () => {}
+  }
 }
 
 export function listenToComplaint(complaintId, onData, onError) {
-  const db = getFirebaseDb()
-  return onSnapshot(
-    doc(db, 'complaints', complaintId),
-    (snapshot) => onData(snapshot.exists() ? normalizeDoc(snapshot) : null),
-    (error) => onError?.(error),
-  )
+  try {
+    const db = getFirebaseDb()
+    return onSnapshot(
+      doc(db, 'complaints', complaintId),
+      (snapshot) => onData(snapshot.exists() ? normalizeSnapshot(snapshot) : null),
+      (error) => onError?.(error),
+    )
+  } catch (error) {
+    onError?.(error)
+    return () => {}
+  }
 }
 
 export async function updateComplaintStatus(complaintId, status, notes = '') {
-  const db = getFirebaseDb()
-  await updateDoc(doc(db, 'complaints', complaintId), {
-    status,
-    notes,
-    updatedAt: serverTimestamp(),
-  })
+  try {
+    await complaintsApi.updateComplaintStatus(complaintId, status)
+  } catch {
+    const db = getFirebaseDb()
+    await updateDoc(doc(db, 'complaints', complaintId), {
+      status,
+      notes,
+      updatedAt: serverTimestamp(),
+    })
+  }
+}
+
+export async function routeComplaint(complaintId, officerId) {
+  return complaintsApi.routeComplaint(complaintId, { officerId })
 }
